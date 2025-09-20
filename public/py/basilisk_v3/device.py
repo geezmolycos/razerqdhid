@@ -17,6 +17,9 @@ class BasiliskV3Device(Device):
                 if it['usage_page'] == 12 and tuple(it.get('fio_count') or ()) == (0, 0, 0):
                     # workaround for webhid which cannot get ifn
                     it['interface_number'] = self.ifn
+                if it['usage_page'] == 12 and tuple(it.get('fio_count') or ()) == (1, 0, 0) and it['interface_number'] == -1:
+                    # workaround for webhid returning ifn as -1 on Linux ungoogled chromium
+                    it['interface_number'] = self.ifn
                 if self.vid == it['vendor_id'] and self.pid == it['product_id'] and it['interface_number'] == self.ifn:
                     ith += 1
                     if nth == ith:

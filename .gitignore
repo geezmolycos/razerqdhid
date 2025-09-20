@@ -19,6 +19,7 @@ node_modules
 dist
 dist-ssr
 *.local
+public/pyodide
 
 # Editor directories and files
 .vscode/*

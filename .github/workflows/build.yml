@@ -25,6 +25,8 @@ jobs:
           node-version: '22'
       - name: Install dependencies
         run: npm install
+      - name: Test Python device detection
+        run: python3 -m unittest discover -s public/py/tests -v
       - name: Build
         run: npm run build
       - name: Upload artifact

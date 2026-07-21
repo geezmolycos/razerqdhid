@@ -8,6 +8,12 @@ class BasiliskV3Device(Device):
     vid = 0x1532
     pid = 0x0099
     ifn = 3
+
+    def _product_ids(self):
+        product_ids = [self.pid]
+        if hasattr(self, 'pid_wireless'):
+            product_ids.append(self.pid_wireless)
+        return tuple(product_ids)
     
     def _fix_interface_number(self, it):
         """Hook for subclasses to fix interface detection issues."""
@@ -26,7 +32,7 @@ class BasiliskV3Device(Device):
                 # Call the hook to allow subclasses to modify 'it'
                 it = self._fix_interface_number(it)
 
-                if self.vid == it['vendor_id'] and self.pid == it['product_id'] and it['interface_number'] == self.ifn:
+                if self.vid == it['vendor_id'] and it['product_id'] in self._product_ids() and it['interface_number'] == self.ifn:
                     ith += 1
                     if nth == ith:
                         self.path = it['path']
@@ -35,24 +41,34 @@ class BasiliskV3Device(Device):
         if self.path is None:
             raise RuntimeError('No matching device')
         print('ok', self.path)
-        self.hid_device = hid.Device(path=self.path)
+        if hasattr(hid, 'Device'):
+            self.hid_device = hid.Device(path=self.path)
+        else:
+            self.hid_device = hid.device()
+            self.hid_device.open_path(self.path)
     
     def close(self):
         self.hid_device.close()
     
     def get_info_manufacturer(self):
-        return self.hid_device.manufacturer
+        if hasattr(self.hid_device, 'manufacturer'):
+            return self.hid_device.manufacturer
+        return self.hid_device.get_manufacturer_string()
     
     def get_info_product(self):
-        return self.hid_device.product
+        if hasattr(self.hid_device, 'product'):
+            return self.hid_device.product
+        return self.hid_device.get_product_string()
     
     def get_info_serial(self):
-        return self.hid_device.serial
+        if hasattr(self.hid_device, 'serial'):
+            return self.hid_device.serial
+        return self.hid_device.get_serial_number_string()
     
     def print_info(self):
-        print(f"device manufacturer: {self.hid_device.manufacturer}")
-        print(f"product: {self.hid_device.product}")
-        print(f"serial: {self.hid_device.serial}")
+        print(f"device manufacturer: {self.get_info_manufacturer()}")
+        print(f"product: {self.get_info_product()}")
+        print(f"serial: {self.get_info_serial()}")
 
         print(self.hid_device.get_indexed_string(1))
         print(self.hid_device.get_indexed_string(2))
@@ -105,10 +121,24 @@ class BasiliskV3ProDevice(BasiliskV3Device):
         # Not sure if this is needed for all devices or just my combination of hardware and software.
         # V3 Pro on this hardware+software combination reports as it["usage_page"]===1 instead of 12
         fio = tuple(it.get("fio_count") or ())
-        if it.get("interface_number", -1) == -1 and (self.pid == it["product_id"] or self.pid_wireless == it["product_id"]) and self.vid == it["vendor_id"]:
+        if it.get("interface_number", -1) == -1 and it["product_id"] in self._product_ids() and self.vid == it["vendor_id"]:
             if len(fio) >= 1 and fio[0] > 0:
                 it["interface_number"] = self.ifn
         return it
+
+
+class BasiliskV3Pro35KPhantomGreenDevice(BasiliskV3ProDevice):
+    """Basilisk V3 Pro 35K Phantom Green Edition, wired or wireless."""
+
+    pid = 0x00D6
+    pid_wireless = 0x00D7
+    ifn = 0
+
+
+WEBHID_DEVICE_CLASSES = (
+    BasiliskV3ProDevice,
+    BasiliskV3Device,
+)
 
 if __name__ == '__main__':
     original_sr_with = BasiliskV3Device.sr_with

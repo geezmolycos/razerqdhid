@@ -12,9 +12,11 @@
 - 其一是在电脑本地运行 python 脚本，这种方式可以使用 python 代码操控鼠标的各项设置，适合编写自动化脚本、绑定快捷键修改鼠标设置等。
 - 其二是编译并运行（或直接通过项目发布的网站链接使用） Vue.js 实现的网页应用。这种方式使用时，程序完全在浏览器中运行，没有后端部分，通过浏览器的 WebHID API，前端 JavaScript 代码可以直接和鼠标通信。适合手动调整设置。
 
-因为我只有Razer Basilisk V3 (雷蛇巴蛇V3，有线版) 这一款鼠标，其他的比较贵我没有买，所以目前只支持这一款。诸如无线版，什么终级版、专业版、35K 现在都**不**支持，但是我相信它们的协议都是差不多的，稍微修改一下，有可能可以正常运行，但是我不对可用性做保证，弄坏了也没法负责。
+因为我只有 Razer Basilisk V3（雷蛇巴蛇 V3，有线版）这一款鼠标，其他型号的支持由贡献者在实际硬件上验证。目前网页应用已验证 Basilisk V3 Pro（有线和无线）。Basilisk V3 Pro 35K Phantom Green Edition（有线和无线）已通过本地 Python/hidapi 验证，但不支持网页应用。未经验证的型号可能使用相似的协议，但请勿假设它们可以安全使用。
 
 [AlexDaichendt](https://github.com/AlexDaichendt) 指出 V3 Pro 使用的协议和 V3 是一样的，现在已经一并在网页应用中实现了。我发现这两个型号还是有些小区别的，如果有什么问题的话，欢迎提出贡献。
+
+Basilisk V3 Pro 35K Phantom Green Edition 也使用相同的按键绑定协议。在 Linux 上，这个型号通过 HID 接口 0 通信，而旧版 Basilisk V3 使用接口 3。接口 0 没有向浏览器公开雷蛇的旧版 feature report 0，因此这个型号只能使用本地 Python/hidapi，不能使用 WebHID 网页应用。
 
 Changes configuration of Razer Basilisk V3 with analyzed reverse-engineered protocol. The project doesn't use proprietary code in Razer Synapse software. It uses python with [libusb/hidapi](https://github.com/libusb/hidapi) to communicate with the mouse, so it's cross-platform.
 
@@ -29,9 +31,11 @@ This project can be used in two ways:
 - The first way is to run the python scripts locally on your computer. In this way python code can be written to control settings of the mouse. It is suitable to use in automation scripting, or changing mouse settings with a hotkey.
 - The second way is to compile and run (or access the published website link) the Vue.js web app. With this way, the program runs totally in the browser. There is no backend part. By utilizing WebHID API of the browser, the front-end JavaScript code can communicate directly with the mouse. It is suitable to adjust settings manually.
 
-Because I only have one Basilisk V3 (Wired) mouse, and other models are somewhat expensive, this project only supports this specific model now. For models such as "Ultimate" "Pro" "35K", it is currently NOT supported. However I believe the protocols are mostly the same. With little modification it may be possible to work just fine. Nevertheless I cannot ensure it is usable, and I can't be responsible if it breaks your mouse.
+Because I only have one Basilisk V3 (Wired) mouse, support for other models is validated on real hardware by contributors. The web app supports the validated Basilisk V3 Pro (wired and wireless). The Basilisk V3 Pro 35K Phantom Green Edition (wired and wireless) is validated through native Python/hidapi, but not through the web app. Other untested models may use a similar protocol, but do not assume they are safe to use.
 
 [AlexDaichendt](https://github.com/AlexDaichendt) stated that according to his experience, the V3 Pro model supports the same protocol and it's intergrated into the webapp now. I noticed there are some subtle differences on RGB lighting and sensor between V3 and V3 Pro. Contributions are welcome if you find problems.
+
+The Basilisk V3 Pro 35K Phantom Green Edition also uses the same button-binding protocol. On Linux, this model communicates through HID interface 0 instead of interface 3 used by the older Basilisk V3. Interface 0 does not expose the legacy Razer feature report 0 to browsers, so this model requires native Python/hidapi and cannot use the WebHID app.
 
 ## 编译和运行 / Compiling and Running
 

@@ -15,8 +15,7 @@ async function requestDevice(){
     import hid
     hid.set_await_js(await_js)
     import qdrazer.protocol as pt
-    # Import both device classes and try the new PID first
-    from basilisk_v3.device import BasiliskV3ProDevice, BasiliskV3Device
+    from basilisk_v3.device import BasiliskV3Device, WEBHID_DEVICE_CLASSES
     if 'original_sr_with' not in globals():
         globals()['original_sr_with'] = BasiliskV3Device.sr_with
         def sr_with(self, *args, **kwargs):
@@ -26,10 +25,10 @@ async function requestDevice(){
             return r
         BasiliskV3Device.sr_with = sr_with
 
-    # Try connecting with the new PID (0x00AB) first, then fall back to old PID (0x0099)
+    # Try the most specific/newest devices first, then fall back to the original V3.
     hid.webhid_request_device()
     device = None
-    for DeviceClass in [BasiliskV3ProDevice, BasiliskV3Device]:
+    for DeviceClass in WEBHID_DEVICE_CLASSES:
         try:
             device = DeviceClass()
             device.connect(path=custom_path)
@@ -67,11 +66,12 @@ const customPid = ref(0);
 
 async function setCustomVidPid() {
   await runPython.value(`
-    from basilisk_v3.device import BasiliskV3Device, BasiliskV3ProDevice
-    BasiliskV3Device.vid = int(vid)
-    BasiliskV3Device.pid = int(pid)
-    BasiliskV3ProDevice.vid = int(vid)
-    BasiliskV3ProDevice.pid = int(pid)
+    from basilisk_v3.device import WEBHID_DEVICE_CLASSES
+    for DeviceClass in WEBHID_DEVICE_CLASSES:
+        DeviceClass.vid = int(vid)
+        DeviceClass.pid = int(pid)
+        if hasattr(DeviceClass, 'pid_wireless'):
+            DeviceClass.pid_wireless = int(pid)
   `, {locals: {vid: customVid.value, pid: customPid.value}});
 }
 
